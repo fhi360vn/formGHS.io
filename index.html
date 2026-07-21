@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Biểu mẫu báo cáo GHS: Sự kiện, Tài liệu, Can thiệp và Outbreak; xuất Excel 3 sheet.">
+  <meta name="description" content="Biểu mẫu báo cáo GHS: LAB, Sự kiện, Tài liệu, Can thiệp và Outbreak; xuất Excel 4 sheet.">
   <title>GHS | Biểu mẫu báo cáo</title>
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -15,12 +15,12 @@
         <div class="brand-mark">GHS</div>
         <div>
           <h1>Biểu mẫu báo cáo</h1>
-          <p>Sự kiện · Tài liệu · Can thiệp · Outbreak</p>
+          <p>LAB · Sự kiện · Tài liệu · Can thiệp · Outbreak</p>
         </div>
       </div>
       <div class="top-actions">
         <button class="button secondary" id="resetAllBtn">Xóa dữ liệu</button>
-        <button class="button primary" id="exportBtn">Xuất Excel 3 sheet</button>
+        <button class="button primary" id="exportBtn">Xuất Excel 4 sheet</button>
       </div>
     </header>
 
@@ -31,6 +31,7 @@
         </button>
         <div class="nav-group">
           <div class="nav-group-title"><span>📝</span><span>Báo cáo</span></div>
+          <button class="nav-item sub" data-view="lab">LAB <span class="count" id="labCount">0</span></button>
           <button class="nav-item sub" data-view="event">Sự kiện <span class="count" id="eventCount">0</span></button>
           <button class="nav-item sub" data-view="material">Tài liệu <span class="count" id="materialCount">0</span></button>
           <button class="nav-item sub" data-view="intervention">Can thiệp <span class="count" id="interventionCount">0</span></button>
@@ -52,34 +53,39 @@
             <p>Biểu mẫu được chuyển đổi từ file nguồn. Chữ hướng dẫn màu mờ nằm ngay trong các ô nhập và tự biến mất khi người dùng bắt đầu nhập.</p>
           </div>
           <div class="hero-stat">
-            <strong>3</strong>
+            <strong>4</strong>
             <span>sheet khi xuất</span>
           </div>
         </div>
 
         <div class="notice">
           <strong>Cấu trúc file tải xuống:</strong>
-          <span><b>1. SỰ KIỆN</b> · <b>2. TÀI LIỆU</b> · <b>3. CAN THIỆP-OUTBREAK</b>. Sheet thứ ba có hai bảng riêng, không trộn dữ liệu.</span>
+          <span><b>1. LAB</b> · <b>2. SỰ KIỆN</b> · <b>3. TÀI LIỆU</b> · <b>4. CAN THIỆP-OUTBREAK</b>. Sheet thứ tư có hai bảng riêng, không trộn dữ liệu.</span>
         </div>
 
         <div class="guide-grid">
           <article class="guide-card">
-            <h3>1. Sự kiện</h3>
+            <h3>1. LAB</h3>
+            <p>Mỗi phòng xét nghiệm lưu thành một bản ghi. Cập nhật khi năng lực xét nghiệm thay đổi hoặc tối thiểu mỗi quý một lần.</p>
+            <button class="text-button" data-go="lab">Nhập LAB →</button>
+          </article>
+          <article class="guide-card">
+            <h3>2. Sự kiện</h3>
             <p>Mỗi hoạt động sự kiện lưu thành một bản ghi. Có thể báo cáo số người tiếp cận theo ước tính hoặc chi tiết theo đối tượng và giới tính.</p>
             <button class="text-button" data-go="event">Nhập Sự kiện →</button>
           </article>
           <article class="guide-card">
-            <h3>2. Tài liệu</h3>
+            <h3>3. Tài liệu</h3>
             <p>Mỗi sản phẩm truyền thông là một bản ghi. Ghi rõ thể loại, kênh truyền thông, phạm vi, số bản in và số người tiếp cận.</p>
             <button class="text-button" data-go="material">Nhập Tài liệu →</button>
           </article>
           <article class="guide-card">
-            <h3>3. Can thiệp</h3>
+            <h3>4. Can thiệp</h3>
             <p>Mỗi biện pháp can thiệp là một bản ghi. Hệ thống tự mở các phần dành riêng cho spillover, đào tạo hoặc mua sắm.</p>
             <button class="text-button" data-go="intervention">Nhập Can thiệp →</button>
           </article>
           <article class="guide-card">
-            <h3>4. Outbreak</h3>
+            <h3>5. Outbreak</h3>
             <p>Mỗi đợt bùng phát dịch là một bản ghi. Phần đáp ứng ban đầu và 7-1-7 được hiển thị theo tình trạng điều tra.</p>
             <button class="text-button" data-go="outbreak">Nhập Outbreak →</button>
           </article>
@@ -108,6 +114,39 @@
             </ol>
           </details>
         </div>
+      </section>
+
+      <section class="view" id="view-lab">
+        <div class="section-heading">
+          <div><span class="eyebrow">BÁO CÁO</span><h2>LAB – Năng lực phòng xét nghiệm</h2><p>Mỗi phòng xét nghiệm lưu thành một bản ghi.</p></div>
+          <span class="record-badge"><b id="labCountHeading">0</b> bản ghi</span>
+        </div>
+        <form id="labForm" class="report-form">
+          <div class="form-section">
+            <h3>Thông tin phòng xét nghiệm</h3>
+            <div class="form-grid cols-3">
+              <label class="field"><span>Tỉnh <b>*</b></span><select id="labProvince" required></select></label>
+              <label class="field"><span>Tên PXN <b>*</b></span><input id="labName" required placeholder="Nhập đầy đủ tên phòng xét nghiệm; mỗi PXN một bản ghi"></label>
+              <label class="field"><span>Ngày cập nhật <b>*</b></span><input id="labDate" required inputmode="numeric" placeholder="Ngày năng lực thay đổi hoặc ngày nhập dữ liệu, dd/mm/yyyy"></label>
+              <label class="field"><span>Tuyến xét nghiệm <b>*</b></span><select id="labLevel" required></select></label>
+              <label class="field"><span>Hình thức sở hữu <b>*</b></span><select id="labOwnership" required></select></label>
+              <label class="field"><span>Loại hình PXN <b>*</b></span><select id="labType" required></select></label>
+              <label class="field"><span>Năng lực XN tác nhân ưu tiên <b>*</b></span><select id="labPriorityCapacity" required><option value="">Chọn Có hoặc Không</option><option>Có</option><option>Không</option></select></label>
+              <label class="field"><span>Năng lực xét nghiệm AMR <b>*</b></span><select id="labAmrCapacity" required><option value="">Chọn Có hoặc Không</option><option>Có</option><option>Không</option></select></label>
+              <label class="field"><span>Tình trạng PXN trong kỳ báo cáo <b>*</b></span><select id="labStatus" required></select></label>
+            </div>
+          </div>
+          <div class="form-section hidden" id="labPathogenSection">
+            <h3>Chi tiết tác nhân có thể xét nghiệm</h3>
+            <p class="section-help">Chỉ nhập khi phòng xét nghiệm có năng lực xét nghiệm tác nhân ưu tiên. Có thể chọn nhiều tác nhân.</p>
+            <div id="labPathogens" class="check-grid"></div>
+          </div>
+          <div class="form-section">
+            <label class="field full"><span>Ghi chú</span><textarea id="labNotes" placeholder="Ghi rõ virus khác hoặc các thông tin liên quan khác về phòng xét nghiệm"></textarea></label>
+          </div>
+          <div class="form-actions"><button type="reset" class="button secondary">Nhập lại</button><button type="submit" class="button primary">Lưu LAB</button></div>
+        </form>
+        <div class="records-panel"><h3>Danh sách phòng xét nghiệm đã lưu</h3><div id="labRecords" class="record-list empty-state">Chưa có bản ghi.</div></div>
       </section>
 
       <section class="view" id="view-event">

@@ -15,6 +15,10 @@ const OPTIONS = {
   materialTypes: ['Ấn phẩm (tờ rơi, áp phích…)', 'Tài liệu kỹ thuật số (video, đồ họa, bài đăng MXH …)', 'Truyền thông đại chúng (TV, đài phát thanh, báo chí…)', 'Các công cụ tương tác (trò chơi, hộp thư góp ý, ứng dụng…)', 'Tài liệu phục vụ sự kiện', 'Khác (ghi rõ trong phần Mô tả)'],
   channels: ['TV', 'Đài phát thanh', 'Trang web (không phải MXH)', 'Điện thoại', 'In ấn', 'Mạng xã hội', 'Không xác định'],
   geographicScopes: ['Toàn quốc', 'Toàn tỉnh', 'Tại Cơ sở / Cộng đồng'],
+  labLevels: ['Tuyến trung ương', 'Tuyến khu vực (vùng/tỉnh/phường/xã)'],
+  labOwnerships: ['Nhà nước', 'Tư nhân hoặc Khác'],
+  labTypes: ['Thú y', 'Y tế công cộng', 'Bệnh viện', 'Khác'],
+  labStatuses: ['Thêm mới', 'Có cập nhật', 'Không thay đổi'],
   intervention: {
     'An toàn và an ninh sinh học phòng xét nghiệm': {
       classifications: ['Quản trị và Giám sát', 'Khung Quản lý Rủi ro', 'Triển khai Chương trình An toàn sinh học', 'Triển khai Chương trình An ninh sinh học', 'Đào tạo, Năng lực và Văn hóa Trách nhiệm', 'Sẵn sàng ứng phó Khẩn cấp và Quản lý Sự cố', 'Cơ sở hạ tầng Phòng xét nghiệm và Kiểm soát Kỹ thuật', 'An ninh Vận chuyển Mẫu bệnh phẩm và Vật liệu', 'Theo dõi, Đánh giá và Cải thiện', 'Các Biện pháp Liên ngành và Bền vững', 'Khác'],
@@ -83,13 +87,14 @@ function loadState() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     return {
+      labs: Array.isArray(saved?.labs) ? saved.labs : [],
       events: Array.isArray(saved?.events) ? saved.events : [],
       materials: Array.isArray(saved?.materials) ? saved.materials : [],
       interventions: Array.isArray(saved?.interventions) ? saved.interventions : [],
       outbreaks: Array.isArray(saved?.outbreaks) ? saved.outbreaks : []
     };
   } catch {
-    return { events: [], materials: [], interventions: [], outbreaks: [] };
+    return { labs: [], events: [], materials: [], interventions: [], outbreaks: [] };
   }
 }
 
@@ -184,7 +189,12 @@ function showView(view) {
 }
 
 function initInputs() {
-  ['eventProvince', 'interventionProvince', 'outbreakProvince'].forEach(id => setSelect(id, OPTIONS.provinces, 'Chọn tỉnh'));
+  ['labProvince', 'eventProvince', 'interventionProvince', 'outbreakProvince'].forEach(id => setSelect(id, OPTIONS.provinces, 'Chọn tỉnh'));
+  setSelect('labLevel', OPTIONS.labLevels, 'Chọn tuyến xét nghiệm');
+  setSelect('labOwnership', OPTIONS.labOwnerships, 'Chọn hình thức sở hữu');
+  setSelect('labType', OPTIONS.labTypes, 'Chọn loại hình PXN');
+  setSelect('labStatus', OPTIONS.labStatuses, 'Chọn tình trạng PXN');
+  renderChecks('labPathogens', 'lab-pathogen', OPTIONS.pathogens);
   setSelect('eventDuration', OPTIONS.durations, 'Chọn thời gian');
   setSelect('eventFormat', OPTIONS.formats, 'Chọn hình thức');
   setSelect('eventScale', OPTIONS.scales, 'Chọn quy mô');
@@ -286,19 +296,27 @@ function getResponses() {
 }
 
 function initDynamicBehavior() {
+  el('labPriorityCapacity').addEventListener('change', updateLabConditional);
   el('eventKnown').addEventListener('change', updateEventConditional);
   el('interventionField').addEventListener('change', updateInterventionOptions);
   el('interventionClassification').addEventListener('change', updateInterventionSections);
   el('outbreakInvestigationStatus').addEventListener('change', updateOutbreakSections);
   el('outbreakStatus').addEventListener('change', updateOutbreakEndDate);
 
-  ['eventForm', 'interventionForm', 'outbreakForm'].forEach(id => {
+  ['labForm', 'eventForm', 'interventionForm', 'outbreakForm'].forEach(id => {
     el(id).addEventListener('reset', () => setTimeout(() => {
+      if (id === 'labForm') updateLabConditional();
       if (id === 'eventForm') { updateEventConditional(); updateParticipantTotals(); }
       if (id === 'interventionForm') { resetInterventionDynamic(); }
       if (id === 'outbreakForm') { updateOutbreakSections(); updateOutbreakEndDate(); buildResponseTable(); }
     }, 0));
   });
+}
+
+function updateLabConditional() {
+  const hasCapacity = value('labPriorityCapacity') === 'Có';
+  el('labPathogenSection').classList.toggle('hidden', !hasCapacity);
+  if (!hasCapacity) el('labPathogens').querySelectorAll('input[type="checkbox"]').forEach(input => { input.checked = false; });
 }
 
 function updateEventConditional() {
@@ -352,10 +370,30 @@ function updateOutbreakEndDate() {
 }
 
 function initForms() {
+  el('labForm').addEventListener('submit', saveLab);
   el('eventForm').addEventListener('submit', saveEvent);
   el('materialForm').addEventListener('submit', saveMaterial);
   el('interventionForm').addEventListener('submit', saveIntervention);
   el('outbreakForm').addEventListener('submit', saveOutbreak);
+}
+
+function saveLab(e) {
+  e.preventDefault();
+  if (!e.currentTarget.reportValidity()) return;
+  if (!validateDates([['Ngày cập nhật', value('labDate'), false]])) return;
+  const hasPriorityCapacity = value('labPriorityCapacity') === 'Có';
+  let pathogens = [];
+  if (hasPriorityCapacity) {
+    pathogens = requireChecks('labPathogens', 'Chi tiết tác nhân có thể xét nghiệm');
+    if (!pathogens) return;
+  }
+  state.labs.push({
+    id: makeId(), province: value('labProvince'), name: value('labName'), date: value('labDate'),
+    level: value('labLevel'), ownership: value('labOwnership'), type: value('labType'),
+    priorityCapacity: value('labPriorityCapacity'), amrCapacity: value('labAmrCapacity'),
+    pathogens, status: value('labStatus'), notes: value('labNotes')
+  });
+  e.currentTarget.reset(); setTimeout(updateLabConditional, 0); saveState(); showToast('Đã lưu thông tin LAB.');
 }
 
 function saveEvent(e) {
@@ -458,11 +496,12 @@ function saveOutbreak(e) {
 }
 
 function renderAllRecords() {
+  renderRecords('labs', 'labRecords', item => `${item.province} · ${item.date} · ${item.status}`, item => item.name);
   renderRecords('events', 'eventRecords', item => `${item.province} · ${item.startDate}`, item => item.name);
   renderRecords('materials', 'materialRecords', item => `${item.period} · ${item.type}`, item => item.name);
   renderRecords('interventions', 'interventionRecords', item => `${item.province} · ${item.field}`, item => item.name);
   renderRecords('outbreaks', 'outbreakRecords', item => `${item.province} · ${item.period}`, item => `${item.suspectedPathogen} — ${item.commune}`);
-  const counts = { event: state.events.length, material: state.materials.length, intervention: state.interventions.length, outbreak: state.outbreaks.length };
+  const counts = { lab: state.labs.length, event: state.events.length, material: state.materials.length, intervention: state.interventions.length, outbreak: state.outbreaks.length };
   Object.entries(counts).forEach(([key, count]) => {
     el(`${key}Count`).textContent = count;
     el(`${key}CountHeading`).textContent = count;
@@ -490,17 +529,19 @@ function initRecordDeletion() {
 function initGlobalActions() {
   el('resetAllBtn').addEventListener('click', () => {
     if (!confirm('Xóa toàn bộ dữ liệu đã lưu trên trình duyệt?')) return;
-    state.events = []; state.materials = []; state.interventions = []; state.outbreaks = [];
+    state.labs = []; state.events = []; state.materials = []; state.interventions = []; state.outbreaks = [];
     saveState(); showToast('Đã xóa toàn bộ dữ liệu.');
   });
   el('exportBtn').addEventListener('click', exportWorkbook);
 }
 
 function exportWorkbook() {
-  const total = state.events.length + state.materials.length + state.interventions.length + state.outbreaks.length;
+  const total = state.labs.length + state.events.length + state.materials.length + state.interventions.length + state.outbreaks.length;
   if (!total) { showToast('Chưa có bản ghi để xuất Excel.', true); return; }
 
   try {
+    const labHeaders = ['Tỉnh', 'Tên PXN', 'Ngày (dd-mm-yy)', 'Tuyến XN', 'Hình thức sở hữu', 'Loại hình PXN', 'Năng lực XN tác nhân ưu tiên', 'Năng lực xét nghiệm AMR', 'Chi tiết tác nhân có thể xét nghiệm', 'Tình trạng PXN trong kỳ báo cáo', 'Ghi chú'];
+    const labRows = state.labs.map(item => [item.province, item.name, item.date, item.level, item.ownership, item.type, item.priorityCapacity, item.amrCapacity, joinValues(item.pathogens), item.status, item.notes]);
     const eventHeaders = buildEventHeaders();
     const eventRows = state.events.map(eventToRow);
     const materialHeaders = ['Kỳ báo cáo', 'Nội dung chính', 'Tên tài liệu', 'Ngày hoàn thành phát triển tài liệu', 'Thể loại', 'Kênh thông tin', 'Phạm vi địa lý', 'Đối tượng tiếp cận mục tiêu', 'Số lượng bản in', 'Số lượng phân phối/tiếp cận', 'Mô tả'];
@@ -515,6 +556,12 @@ function exportWorkbook() {
     const outbreakHeaderRow = outbreakTitleRow + 1;
 
     const sheets = [
+      {
+        name: 'LAB', rows: [labHeaders, ...labRows],
+        headerRows: [0], titleRows: [], merges: [], freezeRows: 1,
+        autoFilter: labRows.length ? `A1:${excelColumn(labHeaders.length)}${labRows.length + 1}` : '',
+        widths: calculateWidths([labHeaders, ...labRows], labHeaders.length)
+      },
       {
         name: 'SỰ KIỆN', rows: [eventHeaders, ...eventRows],
         headerRows: [0], titleRows: [], merges: [], freezeRows: 1,
@@ -543,7 +590,7 @@ function exportWorkbook() {
     const today = new Date();
     const filename = `GHS_Bao_cao_${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}.xlsx`;
     downloadBytes(bytes, filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    showToast('Đã tạo file Excel gồm đúng 3 sheet.');
+    showToast('Đã tạo file Excel gồm đúng 4 sheet, có sheet LAB.');
   } catch (error) {
     console.error(error);
     showToast('Không thể tạo file Excel. Vui lòng kiểm tra dữ liệu và thử lại.', true);
@@ -657,7 +704,7 @@ function createXlsxBytes(sheets) {
   const files = {
     '[Content_Types].xml': `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheetOverrides}<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/><Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/></Types>`,
     '_rels/.rels': `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/></Relationships>`,
-    'docProps/core.xml': `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>Báo cáo GHS</dc:title><dc:subject>Sự kiện, Tài liệu, Can thiệp và Outbreak</dc:subject><dc:creator>GHS Reporting Portal</dc:creator><cp:lastModifiedBy>GHS Reporting Portal</cp:lastModifiedBy><dcterms:created xsi:type="dcterms:W3CDTF">${now}</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">${now}</dcterms:modified></cp:coreProperties>`,
+    'docProps/core.xml': `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>Báo cáo GHS</dc:title><dc:subject>LAB, Sự kiện, Tài liệu, Can thiệp và Outbreak</dc:subject><dc:creator>GHS Reporting Portal</dc:creator><cp:lastModifiedBy>GHS Reporting Portal</cp:lastModifiedBy><dcterms:created xsi:type="dcterms:W3CDTF">${now}</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">${now}</dcterms:modified></cp:coreProperties>`,
     'docProps/app.xml': `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"><Application>GHS Reporting Portal</Application><DocSecurity>0</DocSecurity><ScaleCrop>false</ScaleCrop><HeadingPairs><vt:vector size="2" baseType="variant"><vt:variant><vt:lpstr>Worksheets</vt:lpstr></vt:variant><vt:variant><vt:i4>${sheets.length}</vt:i4></vt:variant></vt:vector></HeadingPairs><TitlesOfParts><vt:vector size="${sheets.length}" baseType="lpstr">${sheets.map(sheet => `<vt:lpstr>${xmlEscape(sheet.name)}</vt:lpstr>`).join('')}</vt:vector></TitlesOfParts><Company></Company><LinksUpToDate>false</LinksUpToDate><SharedDoc>false</SharedDoc><HyperlinksChanged>false</HyperlinksChanged><AppVersion>1.0</AppVersion></Properties>`,
     'xl/workbook.xml': `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><bookViews><workbookView xWindow="0" yWindow="0" windowWidth="24000" windowHeight="12000"/></bookViews><sheets>${sheets.map((sheet, index) => `<sheet name="${xmlEscape(sheet.name)}" sheetId="${index + 1}" r:id="rId${index + 1}"/>`).join('')}</sheets><calcPr calcId="191029"/></workbook>`,
     'xl/_rels/workbook.xml.rels': `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((_, index) => `<Relationship Id="rId${index + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${index + 1}.xml"/>`).join('')}<Relationship Id="rId${sheets.length + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`,
@@ -743,7 +790,7 @@ function downloadBytes(bytes, filename, mimeType) {
 }
 
 function init() {
-  initNavigation(); initInputs(); initDynamicBehavior(); initForms(); initRecordDeletion(); initGlobalActions(); renderAllRecords(); updateEventConditional(); updateInterventionSections(); updateOutbreakSections(); updateOutbreakEndDate();
+  initNavigation(); initInputs(); initDynamicBehavior(); initForms(); initRecordDeletion(); initGlobalActions(); renderAllRecords(); updateLabConditional(); updateEventConditional(); updateInterventionSections(); updateOutbreakSections(); updateOutbreakEndDate();
 }
 
 document.addEventListener('DOMContentLoaded', init);
