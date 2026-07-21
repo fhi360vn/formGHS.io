@@ -1,101 +1,304 @@
 <!doctype html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Biểu mẫu báo cáo GHS chạy trên GitHub Pages và xuất file Excel 3 sheet." />
-  <title>Biểu mẫu báo cáo GHS</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Biểu mẫu báo cáo GHS: Sự kiện, Tài liệu, Can thiệp và Outbreak; xuất Excel 3 sheet.">
+  <title>GHS | Biểu mẫu báo cáo</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header class="site-header">
-    <div class="brand-wrap">
-      <div class="brand-mark">GHS</div>
-      <div>
-        <h1>Biểu mẫu báo cáo GHS</h1>
-        <p>Nhập trực tuyến · Lưu nháp trên trình duyệt · Xuất Excel 3 sheet</p>
-      </div>
-    </div>
-    <nav class="main-nav" aria-label="Điều hướng chính">
-      <button class="nav-btn active" data-view="guide">Hướng dẫn</button>
-      <button class="nav-btn" data-view="report">Báo cáo</button>
-    </nav>
-  </header>
-
-  <main class="page-shell">
-    <section id="guide-view" class="view active" aria-labelledby="guide-title">
-      <div class="hero-card">
+  <div class="app-shell">
+    <header class="topbar">
+      <button class="icon-button mobile-menu" id="mobileMenuBtn" aria-label="Mở menu">☰</button>
+      <div class="brand">
+        <div class="brand-mark">GHS</div>
         <div>
-          <span class="eyebrow">HƯỚNG DẪN SỬ DỤNG</span>
-          <h2 id="guide-title">Nhập một lần, tải ngay file Excel</h2>
-          <p>Mỗi ô nhập liệu có chữ mờ hướng dẫn. Khi người dùng bắt đầu nhập, chữ hướng dẫn tự động biến mất. Dữ liệu được lưu nháp trên chính trình duyệt và không gửi lên máy chủ.</p>
-        </div>
-        <button id="start-report-btn" class="primary-btn">Bắt đầu nhập báo cáo</button>
-      </div>
-
-      <div class="guide-grid">
-        <article class="guide-card">
-          <span class="step">01</span>
-          <h3>Chọn loại báo cáo</h3>
-          <p>Vào menu <strong>Báo cáo</strong>, sau đó chọn Sự kiện, Tài liệu, Can thiệp hoặc Outbreak.</p>
-        </article>
-        <article class="guide-card">
-          <span class="step">02</span>
-          <h3>Nhập và lưu bản ghi</h3>
-          <p>Điền các trường bắt buộc, bổ sung trường theo điều kiện, rồi bấm <strong>Lưu bản ghi</strong>. Có thể sửa hoặc xóa trước khi xuất.</p>
-        </article>
-        <article class="guide-card">
-          <span class="step">03</span>
-          <h3>Xuất file 3 sheet</h3>
-          <p>File <code>.xlsx</code> gồm: <strong>RCCE</strong> (Sự kiện + Tài liệu), <strong>CAN THIỆP</strong> và <strong>OUTBREAK</strong>.</p>
-        </article>
-      </div>
-
-      <div class="instruction-panel">
-        <h3>Lưu ý nhập liệu</h3>
-        <div class="instruction-list">
-          <p><strong>Sự kiện:</strong> nếu biết rõ số người tham dự, nhập chi tiết theo đối tượng và giới tính; nếu không biết rõ, nhập số lượng ước tính.</p>
-          <p><strong>Tài liệu:</strong> mỗi sản phẩm truyền thông là một bản ghi; nêu cơ sở ước tính số người tiếp cận trong phần mô tả.</p>
-          <p><strong>Can thiệp:</strong> hệ thống tự mở các phần Phòng ngừa lây truyền, Đào tạo/Tập huấn hoặc Mua sắm theo lựa chọn.</p>
-          <p><strong>Outbreak:</strong> nhập thông tin dấu hiệu cảnh báo, điều tra, đợt bùng phát, hoạt động đáp ứng ban đầu và các mốc 7-1-7.</p>
+          <h1>Biểu mẫu báo cáo</h1>
+          <p>Sự kiện · Tài liệu · Can thiệp · Outbreak</p>
         </div>
       </div>
-    </section>
+      <div class="top-actions">
+        <button class="button secondary" id="resetAllBtn">Xóa dữ liệu</button>
+        <button class="button primary" id="exportBtn">Xuất Excel 3 sheet</button>
+      </div>
+    </header>
 
-    <section id="report-view" class="view" aria-labelledby="report-title">
-      <div class="report-toolbar">
-        <div>
-          <span class="eyebrow">NHẬP BÁO CÁO</span>
-          <h2 id="report-title">Dữ liệu báo cáo</h2>
-          <p id="autosave-status">Dữ liệu được tự động lưu nháp trên trình duyệt.</p>
+    <aside class="sidebar" id="sidebar">
+      <nav aria-label="Menu chính">
+        <button class="nav-item active" data-view="guide">
+          <span>📘</span><span>Hướng dẫn</span>
+        </button>
+        <div class="nav-group">
+          <div class="nav-group-title"><span>📝</span><span>Báo cáo</span></div>
+          <button class="nav-item sub" data-view="event">Sự kiện <span class="count" id="eventCount">0</span></button>
+          <button class="nav-item sub" data-view="material">Tài liệu <span class="count" id="materialCount">0</span></button>
+          <button class="nav-item sub" data-view="intervention">Can thiệp <span class="count" id="interventionCount">0</span></button>
+          <button class="nav-item sub" data-view="outbreak">Outbreak <span class="count" id="outbreakCount">0</span></button>
         </div>
-        <div class="toolbar-actions">
-          <button id="clear-all-btn" class="ghost-btn danger">Xóa toàn bộ dữ liệu</button>
-          <button id="export-btn" class="primary-btn">Tải file Excel (.xlsx)</button>
+      </nav>
+      <div class="sidebar-note">
+        <strong>Tự động lưu</strong>
+        <span>Dữ liệu đã lưu trên trình duyệt của thiết bị này.</span>
+      </div>
+    </aside>
+
+    <main class="content">
+      <section class="view active" id="view-guide">
+        <div class="hero">
+          <div>
+            <span class="eyebrow">GHS REPORTING PORTAL</span>
+            <h2>Nhập báo cáo trực tuyến và tải file Excel</h2>
+            <p>Biểu mẫu được chuyển đổi từ file nguồn. Chữ hướng dẫn màu mờ nằm ngay trong các ô nhập và tự biến mất khi người dùng bắt đầu nhập.</p>
+          </div>
+          <div class="hero-stat">
+            <strong>3</strong>
+            <span>sheet khi xuất</span>
+          </div>
         </div>
-      </div>
 
-      <div class="summary-strip" aria-label="Tổng số bản ghi">
-        <div><span id="count-event">0</span><small>Sự kiện</small></div>
-        <div><span id="count-material">0</span><small>Tài liệu</small></div>
-        <div><span id="count-intervention">0</span><small>Can thiệp</small></div>
-        <div><span id="count-outbreak">0</span><small>Outbreak</small></div>
-      </div>
+        <div class="notice">
+          <strong>Cấu trúc file tải xuống:</strong>
+          <span><b>1. SỰ KIỆN</b> · <b>2. TÀI LIỆU</b> · <b>3. CAN THIỆP-OUTBREAK</b>. Sheet thứ ba có hai bảng riêng, không trộn dữ liệu.</span>
+        </div>
 
-      <div class="report-tabs" role="tablist" aria-label="Loại báo cáo">
-        <button class="report-tab active" data-report="event">Sự kiện</button>
-        <button class="report-tab" data-report="material">Tài liệu</button>
-        <button class="report-tab" data-report="intervention">Can thiệp</button>
-        <button class="report-tab" data-report="outbreak">Outbreak</button>
-      </div>
+        <div class="guide-grid">
+          <article class="guide-card">
+            <h3>1. Sự kiện</h3>
+            <p>Mỗi hoạt động sự kiện lưu thành một bản ghi. Có thể báo cáo số người tiếp cận theo ước tính hoặc chi tiết theo đối tượng và giới tính.</p>
+            <button class="text-button" data-go="event">Nhập Sự kiện →</button>
+          </article>
+          <article class="guide-card">
+            <h3>2. Tài liệu</h3>
+            <p>Mỗi sản phẩm truyền thông là một bản ghi. Ghi rõ thể loại, kênh truyền thông, phạm vi, số bản in và số người tiếp cận.</p>
+            <button class="text-button" data-go="material">Nhập Tài liệu →</button>
+          </article>
+          <article class="guide-card">
+            <h3>3. Can thiệp</h3>
+            <p>Mỗi biện pháp can thiệp là một bản ghi. Hệ thống tự mở các phần dành riêng cho spillover, đào tạo hoặc mua sắm.</p>
+            <button class="text-button" data-go="intervention">Nhập Can thiệp →</button>
+          </article>
+          <article class="guide-card">
+            <h3>4. Outbreak</h3>
+            <p>Mỗi đợt bùng phát dịch là một bản ghi. Phần đáp ứng ban đầu và 7-1-7 được hiển thị theo tình trạng điều tra.</p>
+            <button class="text-button" data-go="outbreak">Nhập Outbreak →</button>
+          </article>
+        </div>
 
-      <div id="forms-root"></div>
-    </section>
-  </main>
+        <div class="guide-details">
+          <details open>
+            <summary>Nguyên tắc nhập dữ liệu</summary>
+            <ul>
+              <li>Các trường có dấu <span class="required-star">*</span> là bắt buộc.</li>
+              <li>Ngày nhập theo định dạng <b>dd/mm/yyyy</b>.</li>
+              <li>Với mục cho phép nhiều lựa chọn, có thể đánh dấu nhiều ô.</li>
+              <li>Nhấn <b>Lưu bản ghi</b> trước khi chuyển sang nhóm báo cáo khác.</li>
+            </ul>
+          </details>
+          <details>
+            <summary>Lưu trữ và bảo mật</summary>
+            <p>Trang web tĩnh không gửi dữ liệu lên máy chủ. Dữ liệu được lưu trong Local Storage của trình duyệt và chỉ được đóng gói thành Excel khi nhấn nút xuất file.</p>
+          </details>
+          <details>
+            <summary>Triển khai trên GitHub Pages</summary>
+            <ol>
+              <li>Tạo repository mới trên GitHub.</li>
+              <li>Tải toàn bộ các file trong gói này lên nhánh <b>main</b>.</li>
+              <li>Vào <b>Settings → Pages → Deploy from a branch</b>, chọn nhánh <b>main</b> và thư mục <b>/(root)</b>.</li>
+            </ol>
+          </details>
+        </div>
+      </section>
 
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <section class="view" id="view-event">
+        <div class="section-heading">
+          <div><span class="eyebrow">BÁO CÁO</span><h2>Sự kiện RCCE</h2><p>Mỗi sự kiện lưu thành một bản ghi.</p></div>
+          <span class="record-badge"><b id="eventCountHeading">0</b> bản ghi</span>
+        </div>
+        <form id="eventForm" class="report-form">
+          <div class="form-section">
+            <h3>Thông tin chung</h3>
+            <div class="form-grid cols-3">
+              <label class="field"><span>Tỉnh <b>*</b></span><select id="eventProvince" required></select></label>
+              <label class="field"><span>Phường / Xã <b>*</b></span><input id="eventCommune" required placeholder="Nhập tên Phường / Xã nơi tổ chức sự kiện"></label>
+              <label class="field"><span>Tên hoạt động <b>*</b></span><input id="eventName" required placeholder="Nhập tên gọi chính thức của sự kiện"></label>
+              <label class="field"><span>Ngày bắt đầu <b>*</b></span><input id="eventStartDate" required inputmode="numeric" placeholder="dd/mm/yyyy"></label>
+              <label class="field"><span>Thời gian <b>*</b></span><select id="eventDuration" required></select></label>
+              <label class="field"><span>Hình thức <b>*</b></span><select id="eventFormat" required></select></label>
+              <label class="field"><span>Quy mô <b>*</b></span><select id="eventScale" required></select></label>
+              <label class="field"><span>Biết rõ số lượng người tiếp cận? <b>*</b></span><select id="eventKnown" required><option value="">Chọn Có hoặc Không</option><option>Có</option><option>Không</option></select></label>
+              <label class="field"><span>Loại hình hoạt động <b>*</b></span><select id="eventActivityType" required><option value="">Chọn sau khi xác định số lượng</option></select></label>
+            </div>
+            <div class="field-block"><span class="field-title">Nội dung chính <b>*</b></span><div id="eventMainTopics" class="check-grid"></div></div>
+            <div class="field-block"><span class="field-title">Đối tượng tiếp cận mục tiêu <b>*</b></span><div id="eventTargetAudiences" class="check-grid"></div></div>
+            <label class="field full"><span>Mô tả <b>*</b></span><textarea id="eventDescription" required placeholder="Mô tả tổng quan; ghi rõ các thông tin chưa có trong biểu mẫu và đối tượng ‘Khác’ nếu có"></textarea></label>
+          </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js" onerror="this.onerror=null;this.src='https://unpkg.com/exceljs@4.4.0/dist/exceljs.min.js'"></script>
+          <div class="form-section" id="eventEstimateSection">
+            <h3>Ước tính số lượng tiếp cận</h3>
+            <label class="field narrow"><span>Số người ước tính</span><input id="eventEstimate" type="number" min="0" placeholder="Nhập số người ước tính tiếp cận"></label>
+          </div>
+
+          <div class="form-section hidden" id="eventParticipantSection">
+            <h3>Chi tiết số lượng người tham dự</h3>
+            <p class="section-help">Nhập số người theo đối tượng và giới tính. Tổng được tính tự động.</p>
+            <div class="table-wrap"><table class="input-table" id="eventParticipantTable"><thead><tr><th>Đối tượng</th><th>Nam</th><th>Nữ</th><th>Không xác định</th><th>Tổng</th></tr></thead><tbody></tbody></table></div>
+          </div>
+
+          <div class="form-actions"><button type="reset" class="button secondary">Nhập lại</button><button type="submit" class="button primary">Lưu sự kiện</button></div>
+        </form>
+        <div class="records-panel"><h3>Danh sách sự kiện đã lưu</h3><div id="eventRecords" class="record-list empty-state">Chưa có bản ghi.</div></div>
+      </section>
+
+      <section class="view" id="view-material">
+        <div class="section-heading">
+          <div><span class="eyebrow">BÁO CÁO</span><h2>Tài liệu RCCE</h2><p>Mỗi tài liệu lưu thành một bản ghi.</p></div>
+          <span class="record-badge"><b id="materialCountHeading">0</b> bản ghi</span>
+        </div>
+        <form id="materialForm" class="report-form">
+          <div class="form-section">
+            <h3>Thông tin tài liệu</h3>
+            <div class="form-grid cols-3">
+              <label class="field"><span>Kỳ báo cáo <b>*</b></span><input id="materialPeriod" required inputmode="numeric" placeholder="Ngày cuối tháng báo cáo, dd/mm/yyyy"></label>
+              <label class="field"><span>Tên tài liệu <b>*</b></span><input id="materialName" required placeholder="Nhập tên gọi của tài liệu"></label>
+              <label class="field"><span>Ngày hoàn thành <b>*</b></span><input id="materialCompletionDate" required inputmode="numeric" placeholder="dd/mm/yyyy"></label>
+              <label class="field"><span>Thể loại <b>*</b></span><select id="materialType" required></select></label>
+              <label class="field"><span>Phạm vi địa lý <b>*</b></span><select id="materialGeo" required></select></label>
+              <label class="field"><span>Số lượng bản in</span><input id="materialPrintQty" type="number" min="0" placeholder="Để trống nếu không phải tài liệu in"></label>
+              <label class="field"><span>Số lượng phân phối / tiếp cận <b>*</b></span><input id="materialReach" type="number" min="0" required placeholder="Nhập số người hoặc số lượt tiếp cận"></label>
+            </div>
+            <div class="field-block"><span class="field-title">Nội dung chính <b>*</b></span><div id="materialMainTopics" class="check-grid"></div></div>
+            <div class="field-block"><span class="field-title">Kênh thông tin <b>*</b></span><div id="materialChannels" class="check-grid"></div></div>
+            <div class="field-block"><span class="field-title">Đối tượng tiếp cận mục tiêu <b>*</b></span><div id="materialTargetAudiences" class="check-grid"></div></div>
+            <label class="field full"><span>Mô tả <b>*</b></span><textarea id="materialDescription" required placeholder="Mô tả tổng quan, giải trình cách ước tính số tiếp cận và ghi rõ thể loại ‘Khác’ nếu có"></textarea></label>
+          </div>
+          <div class="form-actions"><button type="reset" class="button secondary">Nhập lại</button><button type="submit" class="button primary">Lưu tài liệu</button></div>
+        </form>
+        <div class="records-panel"><h3>Danh sách tài liệu đã lưu</h3><div id="materialRecords" class="record-list empty-state">Chưa có bản ghi.</div></div>
+      </section>
+
+      <section class="view" id="view-intervention">
+        <div class="section-heading">
+          <div><span class="eyebrow">BÁO CÁO</span><h2>Can thiệp chủ động</h2><p>Các phần chuyên biệt tự hiển thị theo lĩnh vực và phân loại.</p></div>
+          <span class="record-badge"><b id="interventionCountHeading">0</b> bản ghi</span>
+        </div>
+        <form id="interventionForm" class="report-form">
+          <div class="form-section">
+            <h3>I. Thông tin chung</h3>
+            <div class="form-grid cols-3">
+              <label class="field"><span>Tỉnh <b>*</b></span><select id="interventionProvince" required></select></label>
+              <label class="field"><span>Tên hoạt động <b>*</b></span><input id="interventionName" required placeholder="Nhập tên gọi của hoạt động can thiệp"></label>
+              <label class="field"><span>Ngày bắt đầu <b>*</b></span><input id="interventionStartDate" required inputmode="numeric" placeholder="dd/mm/yyyy"></label>
+              <label class="field"><span>Lĩnh vực <b>*</b></span><select id="interventionField" required></select></label>
+              <label class="field"><span>Phân loại <b>*</b></span><select id="interventionClassification" required><option value="">Chọn lĩnh vực trước</option></select></label>
+              <label class="field"><span>Cấp độ triển khai <b>*</b></span><select id="interventionLevel" required><option value="">Chọn lĩnh vực trước</option></select></label>
+              <label class="field"><span>Giám sát trọng điểm</span><select id="interventionSentinel"><option value="">Chọn Có, Không hoặc để trống</option><option>Có</option><option>Không</option></select></label>
+            </div>
+            <label class="field full"><span>Các cơ sở triển khai</span><input id="interventionFacilities" placeholder="Nhập tên các cơ sở, ngăn cách bằng dấu chấm phẩy; để trống nếu hoạt động cao hơn cấp cơ sở"></label>
+            <div class="field-block"><span class="field-title">Điểm triển khai</span><div id="interventionSites" class="check-grid"></div></div>
+            <label class="field full"><span>Mô tả <b>*</b></span><textarea id="interventionDescription" required placeholder="Mô tả tổng quan, mục tiêu, phạm vi và các thông tin chưa được thể hiện ở trường khác"></textarea></label>
+          </div>
+
+          <div class="form-section hidden" id="spilloverSection">
+            <h3>II. Phòng ngừa lây truyền từ động vật sang người</h3>
+            <div class="field-block"><span class="field-title">Loài mục tiêu <b>*</b></span><div id="interventionSpecies" class="check-grid"></div></div>
+            <div class="field-block"><span class="field-title">Nhóm tác nhân trọng tâm <b>*</b></span><div id="interventionFocus" class="check-grid"></div></div>
+          </div>
+
+          <div class="form-section hidden" id="trainingSection">
+            <h3>III. Đào tạo / Tập huấn</h3>
+            <div class="form-grid cols-2">
+              <label class="field"><span>Thời gian khóa tập huấn <b>*</b></span><select id="trainingDuration"></select></label>
+              <label class="field"><span>Ước tính số nhân sự cần đào tạo</span><input id="trainingEstimate" type="number" min="0" placeholder="Nhập số nhân sự ước tính cần đào tạo"></label>
+            </div>
+            <div class="field-block"><span class="field-title">Nội dung kỹ thuật <b>*</b></span><div id="trainingTechnical" class="check-grid"></div></div>
+            <p class="section-help">Nhập số người được đào tạo theo nhóm cán bộ, giới tính và cấp triển khai.</p>
+            <div class="table-wrap"><table class="input-table" id="trainingCountTable"><thead><tr><th>Nhóm cán bộ / Giới tính</th><th>Trung ương</th><th>Tỉnh / Vùng</th><th>Xã / Cộng đồng</th><th>Khác</th></tr></thead><tbody></tbody></table></div>
+          </div>
+
+          <div class="form-section hidden" id="procurementSection">
+            <h3>IV. Mua sắm trang thiết bị, vật tư</h3>
+            <div class="form-grid cols-2">
+              <label class="field"><span>Mục đích mua sắm <b>*</b></span><select id="procurementPurpose"><option value="">Chọn mục đích</option><option>Thường quy</option><option>Ứng phó ổ dịch</option></select></label>
+              <label class="field"><span>Thiết bị, vật tư và số lượng <b>*</b></span><textarea id="procurementItems" placeholder="Ví dụ: Máy tính xách tay: 02; bộ lấy mẫu: 100"></textarea></label>
+            </div>
+          </div>
+
+          <div class="form-actions"><button type="reset" class="button secondary">Nhập lại</button><button type="submit" class="button primary">Lưu can thiệp</button></div>
+        </form>
+        <div class="records-panel"><h3>Danh sách can thiệp đã lưu</h3><div id="interventionRecords" class="record-list empty-state">Chưa có bản ghi.</div></div>
+      </section>
+
+      <section class="view" id="view-outbreak">
+        <div class="section-heading">
+          <div><span class="eyebrow">BÁO CÁO</span><h2>Outbreak</h2><p>Mỗi đợt bùng phát dịch lưu thành một bản ghi.</p></div>
+          <span class="record-badge"><b id="outbreakCountHeading">0</b> bản ghi</span>
+        </div>
+        <form id="outbreakForm" class="report-form">
+          <div class="form-section">
+            <h3>Thông tin báo cáo</h3>
+            <div class="form-grid cols-2">
+              <label class="field"><span>Tỉnh báo cáo <b>*</b></span><select id="outbreakProvince" required></select></label>
+              <label class="field"><span>Xã báo cáo <b>*</b></span><input id="outbreakCommune" required placeholder="Nhập tên xã/phường báo cáo"></label>
+              <label class="field"><span>Kỳ báo cáo <b>*</b></span><input id="outbreakPeriod" required placeholder="Ví dụ: Tháng 07/2026"></label>
+              <label class="field"><span>Tác nhân nghi ngờ <b>*</b></span><select id="outbreakSuspectedPathogen" required></select></label>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>Thông tin chung và dấu hiệu cảnh báo</h3>
+            <div class="form-grid cols-3">
+              <label class="field"><span>Ngày báo cáo đầu tiên <b>*</b></span><input id="outbreakFirstReportDate" required inputmode="numeric" placeholder="dd/mm/yyyy"></label>
+              <label class="field"><span>Loại dấu hiệu <b>*</b></span><select id="outbreakSignalType" required></select></label>
+              <label class="field"><span>Nguồn tin <b>*</b></span><select id="outbreakSource" required></select></label>
+              <label class="field"><span>Loại ca bệnh đầu tiên <b>*</b></span><select id="outbreakFirstCase" required></select></label>
+              <label class="field"><span>Kinh độ</span><input id="outbreakLongitude" placeholder="Ví dụ: 106.6297"></label>
+              <label class="field"><span>Vĩ độ</span><input id="outbreakLatitude" placeholder="Ví dụ: 10.8231"></label>
+              <label class="field full-span"><span>Link Google Map</span><input id="outbreakMapLink" type="url" placeholder="Dán link vị trí Google Maps nếu không nhập tọa độ"></label>
+              <label class="field full-span"><span>Tình trạng điều tra <b>*</b></span><select id="outbreakInvestigationStatus" required></select></label>
+            </div>
+            <label class="field full"><span>Mô tả dấu hiệu <b>*</b></span><textarea id="outbreakSignalDescription" required placeholder="Mô tả chi tiết dấu hiệu cảnh báo, thời gian, địa điểm, số ca và nguồn thông tin ban đầu"></textarea></label>
+            <label class="field full"><span>Mô tả việc điều tra <b>*</b></span><textarea id="outbreakInvestigationDescription" required placeholder="Mô tả các hoạt động xác minh, điều tra sơ bộ và kết quả hiện có"></textarea></label>
+          </div>
+
+          <div class="form-section hidden" id="outbreakDetailSection">
+            <h3>Thông tin về đợt bùng phát dịch</h3>
+            <label class="field full"><span>Mô tả sự kiện <b>*</b></span><textarea id="outbreakEventDescription" placeholder="Mô tả diễn biến, phạm vi, số ca, mức độ nghiêm trọng và thông tin dịch tễ liên quan"></textarea></label>
+            <div class="form-grid cols-3">
+              <label class="field"><span>Tác nhân xác định <b>*</b></span><select id="outbreakConfirmedPathogen"></select></label>
+              <label class="field"><span>Liên quan điểm nhập cảnh?</span><select id="outbreakPointOfEntry"></select></label>
+              <label class="field"><span>Tình trạng đợt bùng phát <b>*</b></span><select id="outbreakStatus"><option value="">Chọn tình trạng</option><option>Vẫn đang diễn ra</option><option>Đã kết thúc</option></select></label>
+              <label class="field hidden" id="outbreakEndDateField"><span>Ngày kết thúc <b>*</b></span><input id="outbreakEndDate" inputmode="numeric" placeholder="dd/mm/yyyy"></label>
+            </div>
+          </div>
+
+          <div class="form-section hidden" id="outbreakResponseSection">
+            <h3>Các hoạt động đáp ứng ban đầu</h3>
+            <p class="section-help">Các hoạt động được thiết lập theo biểu mẫu nguồn. Có thể điều chỉnh mô tả cho phù hợp thực tế.</p>
+            <div class="table-wrap"><table class="input-table response-table" id="outbreakResponseTable"><thead><tr><th>Ngày bắt đầu</th><th>Loại can thiệp</th><th>Mô tả</th><th>Phù hợp địa phương?</th></tr></thead><tbody></tbody></table></div>
+          </div>
+
+          <div class="form-section hidden" id="outbreak717Section">
+            <h3>7-1-7</h3>
+            <div class="form-grid cols-2">
+              <label class="field"><span>Đã đánh giá sau can thiệp?</span><select id="outbreakAfterAction"><option value="">Chọn trạng thái</option><option>Đã thực hiện</option><option>Chưa thực hiện</option></select></label>
+              <label class="field"><span>Đã phân tích chính thức theo 7-1-7?</span><select id="outbreak717Analysis"><option value="">Chọn trạng thái</option><option>Đã thực hiện</option><option>Chưa thực hiện</option></select></label>
+              <label class="field"><span>Ngày phát sinh / xuất hiện</span><input id="outbreakEmergenceDate" inputmode="numeric" placeholder="dd/mm/yyyy"></label>
+              <label class="field"><span>Ngày phát hiện</span><input id="outbreakDetectionDate" inputmode="numeric" placeholder="dd/mm/yyyy"></label>
+              <label class="field"><span>Ngày thông báo</span><input id="outbreakNotificationDate" inputmode="numeric" placeholder="dd/mm/yyyy"></label>
+              <label class="field"><span>Ngày hoàn thành ứng phó sớm</span><input id="outbreakEarlyResponseDate" inputmode="numeric" placeholder="dd/mm/yyyy"></label>
+            </div>
+          </div>
+
+          <div class="form-section"><label class="field full"><span>Ghi chú</span><textarea id="outbreakNotes" placeholder="Ghi các thông tin liên quan chưa được thể hiện ở các trường trên"></textarea></label></div>
+          <div class="form-actions"><button type="reset" class="button secondary">Nhập lại</button><button type="submit" class="button primary">Lưu outbreak</button></div>
+        </form>
+        <div class="records-panel"><h3>Danh sách outbreak đã lưu</h3><div id="outbreakRecords" class="record-list empty-state">Chưa có bản ghi.</div></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="app.js"></script>
 </body>
 </html>
