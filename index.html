@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Biểu mẫu báo cáo GHS chạy trên GitHub Pages và xuất file Excel 3 sheet." />
+  <title>Biểu mẫu báo cáo GHS</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand-wrap">
+      <div class="brand-mark">GHS</div>
+      <div>
+        <h1>Biểu mẫu báo cáo GHS</h1>
+        <p>Nhập trực tuyến · Lưu nháp trên trình duyệt · Xuất Excel 3 sheet</p>
+      </div>
+    </div>
+    <nav class="main-nav" aria-label="Điều hướng chính">
+      <button class="nav-btn active" data-view="guide">Hướng dẫn</button>
+      <button class="nav-btn" data-view="report">Báo cáo</button>
+    </nav>
+  </header>
+
+  <main class="page-shell">
+    <section id="guide-view" class="view active" aria-labelledby="guide-title">
+      <div class="hero-card">
+        <div>
+          <span class="eyebrow">HƯỚNG DẪN SỬ DỤNG</span>
+          <h2 id="guide-title">Nhập một lần, tải ngay file Excel</h2>
+          <p>Mỗi ô nhập liệu có chữ mờ hướng dẫn. Khi người dùng bắt đầu nhập, chữ hướng dẫn tự động biến mất. Dữ liệu được lưu nháp trên chính trình duyệt và không gửi lên máy chủ.</p>
+        </div>
+        <button id="start-report-btn" class="primary-btn">Bắt đầu nhập báo cáo</button>
+      </div>
+
+      <div class="guide-grid">
+        <article class="guide-card">
+          <span class="step">01</span>
+          <h3>Chọn loại báo cáo</h3>
+          <p>Vào menu <strong>Báo cáo</strong>, sau đó chọn Sự kiện, Tài liệu, Can thiệp hoặc Outbreak.</p>
+        </article>
+        <article class="guide-card">
+          <span class="step">02</span>
+          <h3>Nhập và lưu bản ghi</h3>
+          <p>Điền các trường bắt buộc, bổ sung trường theo điều kiện, rồi bấm <strong>Lưu bản ghi</strong>. Có thể sửa hoặc xóa trước khi xuất.</p>
+        </article>
+        <article class="guide-card">
+          <span class="step">03</span>
+          <h3>Xuất file 3 sheet</h3>
+          <p>File <code>.xlsx</code> gồm: <strong>RCCE</strong> (Sự kiện + Tài liệu), <strong>CAN THIỆP</strong> và <strong>OUTBREAK</strong>.</p>
+        </article>
+      </div>
+
+      <div class="instruction-panel">
+        <h3>Lưu ý nhập liệu</h3>
+        <div class="instruction-list">
+          <p><strong>Sự kiện:</strong> nếu biết rõ số người tham dự, nhập chi tiết theo đối tượng và giới tính; nếu không biết rõ, nhập số lượng ước tính.</p>
+          <p><strong>Tài liệu:</strong> mỗi sản phẩm truyền thông là một bản ghi; nêu cơ sở ước tính số người tiếp cận trong phần mô tả.</p>
+          <p><strong>Can thiệp:</strong> hệ thống tự mở các phần Phòng ngừa lây truyền, Đào tạo/Tập huấn hoặc Mua sắm theo lựa chọn.</p>
+          <p><strong>Outbreak:</strong> nhập thông tin dấu hiệu cảnh báo, điều tra, đợt bùng phát, hoạt động đáp ứng ban đầu và các mốc 7-1-7.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="report-view" class="view" aria-labelledby="report-title">
+      <div class="report-toolbar">
+        <div>
+          <span class="eyebrow">NHẬP BÁO CÁO</span>
+          <h2 id="report-title">Dữ liệu báo cáo</h2>
+          <p id="autosave-status">Dữ liệu được tự động lưu nháp trên trình duyệt.</p>
+        </div>
+        <div class="toolbar-actions">
+          <button id="clear-all-btn" class="ghost-btn danger">Xóa toàn bộ dữ liệu</button>
+          <button id="export-btn" class="primary-btn">Tải file Excel (.xlsx)</button>
+        </div>
+      </div>
+
+      <div class="summary-strip" aria-label="Tổng số bản ghi">
+        <div><span id="count-event">0</span><small>Sự kiện</small></div>
+        <div><span id="count-material">0</span><small>Tài liệu</small></div>
+        <div><span id="count-intervention">0</span><small>Can thiệp</small></div>
+        <div><span id="count-outbreak">0</span><small>Outbreak</small></div>
+      </div>
+
+      <div class="report-tabs" role="tablist" aria-label="Loại báo cáo">
+        <button class="report-tab active" data-report="event">Sự kiện</button>
+        <button class="report-tab" data-report="material">Tài liệu</button>
+        <button class="report-tab" data-report="intervention">Can thiệp</button>
+        <button class="report-tab" data-report="outbreak">Outbreak</button>
+      </div>
+
+      <div id="forms-root"></div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js" onerror="this.onerror=null;this.src='https://unpkg.com/exceljs@4.4.0/dist/exceljs.min.js'"></script>
+  <script src="app.js"></script>
+</body>
+</html>
